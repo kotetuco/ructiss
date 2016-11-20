@@ -2,6 +2,7 @@
 # kotetuco, 2016
 
 ARCH=i386
+TARGET_ARCH=i686-unknown-linux-gnu
 BUILD_NAME=ructiss-$(ARCH)
 
 BUILD_DIR=./build/$(BUILD_NAME)
@@ -24,7 +25,7 @@ $(BUILD_DIR)/$(BUILD_NAME).sys: $(BUILD_DIR)/kernel.bin  $(BUILD_DIR)/secondboot
 	cat $(BUILD_DIR)/secondboot.bin $(BUILD_DIR)/kernel.bin > $(BUILD_DIR)/$(BUILD_NAME).sys
 
 $(BUILD_DIR)/kernel.bin:$(BUILD_DIR)/init_os.o
-	$(ARCH)-elf-gcc -v -nostdlib -Tdata=0x00310000 $(BUILD_DIR)/init_os.o -T kernel.ld -o $(BUILD_DIR)/kernel.bin -Wl,-Map,$(BUILD_DIR)/kernel.map -Wall
+	$(TARGET_ARCH)-ld -v -nostdlib -Tdata=0x00310000 $(BUILD_DIR)/init_os.o -T kernel.ld -o $(BUILD_DIR)/kernel.bin -Map $(BUILD_DIR)/kernel.map
 
 # ipl (i386 only)
 $(BUILD_DIR)/ipl.bin: $(SRC_BOOT)/ipl.asm
