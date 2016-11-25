@@ -1,6 +1,7 @@
 ;; 
 ;; For x86 Architecture
 ;; kotetuco, 2007-2016
+;;
 
 	org	0xc200
 
@@ -25,7 +26,9 @@ VBEMODE EQU	0x101		; VBEの画面モード
 	mov	ax, 0x4f00
 	int	0x10
 	cmp	ax, 0x004f
-	jne	scrn320
+;;; 	rust側での初期化処理が不十分のため、しばらくの間320x240固定とする
+;;; 	jne	scrn320
+	jmp	scrn320
 
 	;; VBEのバージョンチェック
 	mov	ax, [es:di + 4]

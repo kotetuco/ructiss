@@ -1,6 +1,6 @@
 /*
 kernel.ls
-Toru Kuriyama 2008 - 2016
+kotetuco 2008 - 2016
 */
 
 /*入力オブジェクトファイル(将来的にMakefileで定義)*/

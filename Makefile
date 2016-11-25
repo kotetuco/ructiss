@@ -49,7 +49,7 @@ image:
 
 run:
 	make image
-	qemu-system-$(ARCH) -m 32 -localtime -vga std  -fda $(BUILD_DIR)/$(BUILD_NAME).img
+	qemu-system-$(ARCH) -m 32 -localtime -vga std -fda $(BUILD_DIR)/$(BUILD_NAME).img -monitor stdio
 
 tools:
 	ifeq ($(UNAME),Darwin)
