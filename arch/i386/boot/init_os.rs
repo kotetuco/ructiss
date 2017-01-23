@@ -5,13 +5,15 @@
 #![feature(lang_items)]
 #![feature(start)]
 #![no_main]
-#![feature(no_std)]
 #![no_std]
 #![feature(asm)]
 
-use core::mem;
+extern {
+    // Our C function definitions!
+    pub fn io_out8(port: i32, data: i32);
+}
 
-#[no_mangle]
+//#[no_mangle]
 #[cfg(any(target_arch = "x86"))]
 fn hlt() {
     unsafe {
@@ -19,7 +21,7 @@ fn hlt() {
     }
 }
 
-#[no_mangle]
+//#[no_mangle]
 #[cfg(any(target_arch = "x86"))]
 fn cli() {
     unsafe {
@@ -27,7 +29,7 @@ fn cli() {
     }
 }
 
-#[no_mangle]
+//#[no_mangle]
 #[cfg(any(target_arch = "x86"))]
 fn load_eflags() -> u32 {
     let eflags: u32;
@@ -42,7 +44,7 @@ fn load_eflags() -> u32 {
     return eflags;
 }
 
-#[no_mangle]
+//#[no_mangle]
 #[cfg(any(target_arch = "x86"))]
 fn store_eflags(eflags: u32) {
     unsafe {
@@ -55,7 +57,7 @@ fn store_eflags(eflags: u32) {
     }
 }
 
-#[no_mangle]
+//#[no_mangle]
 #[cfg(any(target_arch = "x86"))]
 fn write_mem8(addr:u32, data:u8) {
     unsafe {
@@ -67,13 +69,13 @@ fn write_mem8(addr:u32, data:u8) {
     }
 }
 
-#[no_mangle]
+//#[no_mangle]
 #[cfg(any(target_arch = "x86"))]
-fn io_out_u8(port:u32, data:u8) {
+fn io_out_u8(port:i32, data:i32) {
     unsafe {
-        asm!("mov edx, $0
-              mov al, $1
-              out dx, ax"
+        asm!("mov dx, [esp + 4]
+              mov al, [esp + 8]
+              out dx, al"
              :
              : "r"(port), "r"(data)
              : "eax", "edx"
@@ -81,7 +83,21 @@ fn io_out_u8(port:u32, data:u8) {
     }
 }
 
-#[no_mangle]
+//#[no_mangle]
+#[cfg(any(target_arch = "x86"))]
+fn io_out_i32(port:i32, data:i32) {
+    unsafe {
+        asm!("mov edx, $0
+              mov al, $1
+              out dx, al"
+             :
+             : "r"(port), "r"(data)
+             : "eax", "edx"
+             : "intel");
+    }
+}
+
+//#[no_mangle]
 #[cfg(any(target_arch = "x86"))]
 fn debug_print_to_ax(value:u16) {
     unsafe {
@@ -96,7 +112,7 @@ fn debug_print_to_ax(value:u16) {
     }
 }
 
-#[no_mangle]
+//#[no_mangle]
 #[cfg(any(target_arch = "x86"))]
 fn debug_print_to_eax(value:u32) {
     unsafe {
@@ -111,26 +127,26 @@ fn debug_print_to_eax(value:u32) {
     }
 }
 
-#[no_mangle]
+//#[no_mangle]
 fn init_palette() {
     let eflags = load_eflags();
     cli();
-    io_out_u8(0x03c8, 0);
-    RGBDef.black().setRGBToIO();
-    RGBDef.lightRed().setRGBToIO();
-    RGBDef.lightYellow().setRGBToIO();
-    RGBDef.lightBlue().setRGBToIO();
-    RGBDef.lightPurple().setRGBToIO();
-    RGBDef.lightPaleBlue().setRGBToIO();
-    RGBDef.white().setRGBToIO();
-    RGBDef.lightGray().setRGBToIO();
-    RGBDef.darkRed().setRGBToIO();
-    RGBDef.darkGreen().setRGBToIO();
-    RGBDef.darkYellow().setRGBToIO();
-    RGBDef.darkBlue().setRGBToIO();
-    RGBDef.darkPaleBlue().setRGBToIO();
-    RGBDef.darkPaleBlue().setRGBToIO();
-    RGBDef.darkGray().setRGBToIO();
+    RGBDef.black().set_rgb_to_io(0);
+    RGBDef.light_red().set_rgb_to_io(1);
+    RGBDef.light_green().set_rgb_to_io(2);
+    RGBDef.light_yellow().set_rgb_to_io(3);
+    RGBDef.light_blue().set_rgb_to_io(4);
+    RGBDef.light_purple().set_rgb_to_io(5);
+    RGBDef.light_pale_blue().set_rgb_to_io(6);
+    RGBDef.white().set_rgb_to_io(7);
+    RGBDef.light_gray().set_rgb_to_io(8);
+    RGBDef.dark_red().set_rgb_to_io(9);
+    RGBDef.dark_green().set_rgb_to_io(10);
+    RGBDef.dark_yellow().set_rgb_to_io(11);
+    RGBDef.dark_blue().set_rgb_to_io(12);
+    RGBDef.dark_purple().set_rgb_to_io(13);
+    RGBDef.dark_pale_blue().set_rgb_to_io(14);
+    RGBDef.dark_gray().set_rgb_to_io(15);
     store_eflags(eflags);
 }
 
@@ -154,6 +170,7 @@ pub extern fn init_os() {
 //        write_mem8(vram_address + offset, 0x00);
         let vram: *mut u8 = (vram_address + offset) as *mut u8;
         unsafe {
+            // light green
             *vram = 0x02;
         }
     }
@@ -164,9 +181,9 @@ pub extern fn init_os() {
 }
 
 struct RGB {
-    r: u8,
-    g: u8,
-    b: u8,
+    r: i32,
+    g: i32,
+    b: i32,
 }
 
 struct RGBDef;
@@ -176,27 +193,27 @@ impl RGBDef {
         return RGB { r: 0x00, g: 0x00, b: 0x00,};
     }
 
-    fn lightRed(&self) -> RGB {
+    fn light_red(&self) -> RGB {
         return RGB { r: 0xff, g: 0x00, b: 0x00,};
     }
 
-    fn lightGreen(&self) -> RGB {
+    fn light_green(&self) -> RGB {
         return RGB { r: 0x00, g: 0xff, b: 0x00,};
     }
 
-    fn lightYellow(&self) -> RGB {
+    fn light_yellow(&self) -> RGB {
         return RGB { r: 0xff, g: 0xff, b: 0x00,};
     }
 
-    fn lightBlue(&self) -> RGB {
+    fn light_blue(&self) -> RGB {
         return RGB { r: 0x00, g: 0x00, b: 0xff,};
     }
 
-    fn lightPurple(&self) -> RGB {
+    fn light_purple(&self) -> RGB {
         return RGB { r: 0xff, g: 0x00, b: 0xff,};
     }
 
-    fn lightPaleBlue(&self) -> RGB {
+    fn light_pale_blue(&self) -> RGB {
         return RGB { r: 0x00, g: 0xff, b: 0xff,};
     }
 
@@ -204,48 +221,55 @@ impl RGBDef {
         return RGB { r: 0xff, g: 0xff, b: 0xff,};
     }
 
-    fn lightGray(&self) -> RGB {
+    fn light_gray(&self) -> RGB {
         return RGB { r: 0xc6, g: 0xc6, b: 0xc6,};
     }
 
-    fn darkRed(&self) -> RGB {
+    fn dark_red(&self) -> RGB {
         return RGB { r: 0x84, g: 0x00, b: 0x00,};
     }
 
-    fn darkGreen(&self) -> RGB {
+    fn dark_green(&self) -> RGB {
         return RGB { r: 0x00, g: 0x84, b: 0x00,};
     }
 
-    fn darkYellow(&self) -> RGB {
+    fn dark_yellow(&self) -> RGB {
         return RGB { r: 0x84, g: 0x84, b: 0x00,};
     }
 
-    fn darkBlue(&self) -> RGB {
+    fn dark_blue(&self) -> RGB {
         return RGB { r: 0x00, g: 0x00, b: 0x84,};
     }
 
-    fn darkPurple(&self) -> RGB {
+    fn dark_purple(&self) -> RGB {
         return RGB { r: 0x84, g: 0x00, b: 0x84,};
     }
 
-    fn darkPaleBlue(&self) -> RGB {
+    fn dark_pale_blue(&self) -> RGB {
         return RGB { r: 0x00, g: 0x84, b: 0x84,};
     }
 
-    fn darkGray(&self) -> RGB {
+    fn dark_gray(&self) -> RGB {
         return RGB { r: 0x84, g: 0x84, b: 0x84,};
     }
 }
 
 trait SetRGBToIO {
-    fn setRGBToIO(&self);
+    fn set_rgb_to_io(&self, palette_no:i32);
 }
 
 impl SetRGBToIO for RGB {
-    fn setRGBToIO(&self) {
-        io_out_u8(0x03c9, self.r << 2);//R
-        io_out_u8(0x03c9, self.g << 2);//G
-        io_out_u8(0x03c9, self.b << 2);//B
+    fn set_rgb_to_io(&self, palette_no:i32) {
+        unsafe {
+            io_out8(0x03c8, palette_no);
+            io_out8(0x03c9, self.r >> 2);
+            io_out8(0x03c9, self.g >> 2);
+            io_out8(0x03c9, self.b >> 2);
+        }
+//        io_out_u8(0x03c8, palette_no);
+//        io_out_u8(0x03c9, self.r >> 2);
+//        io_out_u8(0x03c9, self.g >> 2);
+//        io_out_u8(0x03c9, self.b >> 2);
     }
 }
 

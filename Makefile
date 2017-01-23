@@ -24,8 +24,8 @@ $(BUILD_DIR)/$(BUILD_NAME).img: $(BUILD_DIR)/ipl.bin $(BUILD_DIR)/$(BUILD_NAME).
 $(BUILD_DIR)/$(BUILD_NAME).sys: $(BUILD_DIR)/kernel.bin  $(BUILD_DIR)/secondboot.bin
 	cat $(BUILD_DIR)/secondboot.bin $(BUILD_DIR)/kernel.bin > $(BUILD_DIR)/$(BUILD_NAME).sys
 
-$(BUILD_DIR)/kernel.bin:$(BUILD_DIR)/init_os.o
-	$(TARGET_ARCH)-ld -v -nostdlib -Tdata=0x00310000 $(BUILD_DIR)/init_os.o -T kernel.ld -o $(BUILD_DIR)/kernel.bin -Map $(BUILD_DIR)/kernel.map
+$(BUILD_DIR)/kernel.bin:$(BUILD_DIR)/init_os.o $(BUILD_DIR)/osfunc.o
+	$(TARGET_ARCH)-ld -v -nostdlib -Tdata=0x00310000 $(BUILD_DIR)/init_os.o $(BUILD_DIR)/osfunc.o -T kernel.ld -o $(BUILD_DIR)/kernel.bin -Map $(BUILD_DIR)/kernel.map
 
 # ipl (i386 only)
 $(BUILD_DIR)/ipl.bin: $(SRC_BOOT)/ipl.asm
@@ -36,12 +36,15 @@ $(BUILD_DIR)/secondboot.bin:$(SRC_BOOT)/secondboot.asm
 	nasm -f bin -o $(BUILD_DIR)/secondboot.bin $(SRC_BOOT)/secondboot.asm -l $(BUILD_DIR)/secondboot.lst
 
 # libcore (For Rust code)
-$(BUILD_DIR)/libcore.rlib:./rust-lang/src/libcore/lib.rs
-	rustc --verbose --target=i686-unknown-linux-gnu --crate-type=rlib --emit=link,dep-info -C opt-level=2 -C no-prepopulate-passes -C no-stack-check -Z no-landing-pads -o $(BUILD_DIR)/libcore.rlib ./rust-lang/src/libcore/lib.rs
+$(BUILD_DIR)/libcore.rlib:$(shell rustc --print sysroot)/lib/rustlib/src/rust/src/libcore/lib.rs
+	rustc --verbose --target=i686-unknown-linux-gnu --crate-type=rlib --emit=link,dep-info -C opt-level=2 -C no-prepopulate-passes -C no-stack-check -Z no-landing-pads -o $(BUILD_DIR)/libcore.rlib $(shell rustc --print sysroot)/lib/rustlib/src/rust/src/libcore/lib.rs
 
 # kernel code
 $(BUILD_DIR)/%.o:$(SRC_BOOT)/%.rs $(BUILD_DIR)/libcore.rlib
-	rustc --target=i686-unknown-linux-gnu --crate-type=staticlib --emit=obj -C lto -C opt-level=2 -C no-prepopulate-passes -C no-stack-check -Z verbose -Z no-landing-pads -o $@ $< --extern core=$(BUILD_DIR)/libcore.rlib
+	rustc --target=i686-unknown-linux-gnu --crate-type=staticlib --emit=obj -C lto -C opt-level=2 -C no-prepopulate-passes -C no-stack-check -C relocation-model=static -Z verbose -Z no-landing-pads -o $@ $< --extern core=$(BUILD_DIR)/libcore.rlib
+
+$(BUILD_DIR)/%.o:$(SRC_BOOT)/%.asm
+	nasm -f elf32 $(SRC_BOOT)/$*.asm -o $(BUILD_DIR)/$*.o -l $(BUILD_DIR)/$*.lst
 
 # build target
 image:
@@ -50,6 +53,9 @@ image:
 
 run:
 	make image
+	make qemu
+
+qemu:
 	qemu-system-$(ARCH) -m 32 -localtime -vga std -fda $(BUILD_DIR)/$(BUILD_NAME).img -monitor stdio
 
 tools:

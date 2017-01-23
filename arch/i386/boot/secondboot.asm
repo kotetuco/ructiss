@@ -1,7 +1,7 @@
-;; 
-;; For x86 Architecture
-;; kotetuco, 2007-2016
-;;
+;;; 
+;;; For x86 Architecture
+;;; kotetuco, 2007-2016
+;;;
 
 	org	0xc200
 

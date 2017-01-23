@@ -1,6 +1,8 @@
-;; IPL program (ipl.asm)
-;; For x86 Architecture
-;; kotetuco, 2007-2016
+;;;
+;;; IPL program (ipl.asm)
+;;; For x86 Architecture
+;;; kotetuco, 2007-2016
+;;; 
 	
 	ORG 0x7c00
 
