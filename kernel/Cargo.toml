@@ -1,0 +1,31 @@
+[package]
+name = "ructiss"
+version = "0.0.1"
+authors = ["kotetuco"]
+
+[lib]
+path = "src/lib.rs"
+crate-type = ["staticlib"]
+#crate-type = ["rlib"]
+
+[profile.dev]
+panic = "abort"
+opt-level = 0
+debug = true
+lto = true
+
+[profile.release]
+panic = "abort"
+opt-level = 2
+lto = true
+
+[dependencies]
+rlibc = "0.1.4"
+
+[target.i686-unknown-linux-gnu]
+
+[target.i686-unknown-linux-gnu.dependencies]
+arch-i686-unknown-linux-gnu = { path = "arch/i686-unknown-linux-gnu" }
+
+[target.arm-none-eabi.dependencies]
+arch-arm-none-eabi = { path = "arch/arm-none-eabi" }

@@ -7,8 +7,7 @@ kotetuco 2008 - 2016
 
 /*出力オブジェクトファイル(Makefileで定義)*/
 
-/*エントリーポイントファイル*/
-/*STARTUP(build/ructiss-i386/init_os.o)*/
+ENTRY(init_os)
 
 /*出力フォーマット*/
 OUTPUT_FORMAT("binary")
@@ -33,12 +32,12 @@ SECTIONS{
 .text ADDR(.head) + SIZEOF(.head) : SUBALIGN(1)
 {
 	/*.textセクション全部を含む*/
-	*(.text);
+	*(.text)
 }
-
 
 /*.dataセクションのメモリ開始位置*/
 .data 0x00000400:
+/*.data :*/
 
 /*.dataセクションのファイル上の開始位置*/
 AT(LOADADDR(.text) + SIZEOF(.text)) SUBALIGN(4)
@@ -55,5 +54,8 @@ AT(LOADADDR(.data) + SIZEOF(.data)) SUBALIGN(4)
 {
 	*(.bss)
 }
+
+/* 上記以外のセクションは無視する */
+/DISCARD/ : {*(*)}
 
 }
