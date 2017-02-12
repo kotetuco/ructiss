@@ -14,8 +14,6 @@ UNAME := $(shell uname)
 
 BUILD_MODE=debug
 
-RUST_TARGET_PATH=${PWD}
-
 # default
 default:
 	make image
@@ -41,7 +39,7 @@ $(BUILD_DIR)/secondboot.bin:./kernel/arch/$(TARGET_ARCH)/asm/secondboot.asm
 
 # kernel code
 target/$(TARGET_ARCH)-rust/$(BUILD_MODE)/libructiss.a: $(TARGET_ARCH)-rust.json ./kernel/Cargo.toml ./kernel/src/*.rs
-	rustup run nightly `which xargo` build -v --target=$(TARGET_ARCH)-rust --manifest-path kernel/Cargo.toml
+	RUST_TARGET_PATH=$(PWD) rustup run nightly `which xargo` build -v --target=$(TARGET_ARCH)-rust --manifest-path kernel/Cargo.toml
 
 $(BUILD_DIR)/%.o:./kernel/arch/$(TARGET_ARCH)/asm/%.asm
 	nasm -f elf32 ./kernel/arch/$(TARGET_ARCH)/asm/$*.asm -o $(BUILD_DIR)/$*.o -l $(BUILD_DIR)/$*.lst
