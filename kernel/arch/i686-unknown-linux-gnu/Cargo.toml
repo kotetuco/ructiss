@@ -1,3 +1,6 @@
 [package]
-name = "arch-i686-unknown-linux-gnu"
+name = "arch"
 version = "0.0.1"
+
+[dependencies]
+ructiss_core = { path = "../../common/core" }

@@ -21,9 +21,10 @@ lto = true
 [dependencies]
 compiler_builtins = { git = "https://github.com/rust-lang-nursery/compiler-builtins" }
 rlibc = "1.0.0"
+ructiss_core = { path = "common/core/" }
 
-[target.i686-unknown-linux-gnu.dependencies]
-arch-i686-unknown-linux-gnu = { path = "arch/i686-unknown-linux-gnu" }
+[target.i686-unknown-linux-gnu-rust.dependencies]
+arch = { path = "arch/i686-unknown-linux-gnu" }
 
-[target.arm-none-eabi.dependencies]
+[target.arm-none-eabi-rust.dependencies]
 arch-arm-none-eabi = { path = "arch/arm-none-eabi" }
