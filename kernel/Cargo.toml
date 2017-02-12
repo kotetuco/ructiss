@@ -6,7 +6,6 @@ authors = ["kotetuco"]
 [lib]
 path = "src/lib.rs"
 crate-type = ["staticlib"]
-#crate-type = ["rlib"]
 
 [profile.dev]
 panic = "abort"
@@ -20,9 +19,8 @@ opt-level = 2
 lto = true
 
 [dependencies]
-rlibc = "0.1.4"
-
-[target.i686-unknown-linux-gnu]
+compiler_builtins = { git = "https://github.com/rust-lang-nursery/compiler-builtins" }
+rlibc = "1.0.0"
 
 [target.i686-unknown-linux-gnu.dependencies]
 arch-i686-unknown-linux-gnu = { path = "arch/i686-unknown-linux-gnu" }

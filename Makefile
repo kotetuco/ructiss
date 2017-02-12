@@ -14,6 +14,8 @@ UNAME := $(shell uname)
 
 BUILD_MODE=debug
 
+RUST_TARGET_PATH=${PWD}
+
 # default
 default:
 	make image
@@ -27,7 +29,7 @@ $(BUILD_DIR)/$(BUILD_NAME).sys: $(BUILD_DIR)/kernel.bin  $(BUILD_DIR)/secondboot
 	cat $(BUILD_DIR)/secondboot.bin $(BUILD_DIR)/kernel.bin > $(BUILD_DIR)/$(BUILD_NAME).sys
 
 $(BUILD_DIR)/kernel.bin:target/$(TARGET_ARCH)-rust/$(BUILD_MODE)/libructiss.a $(BUILD_DIR)/osfunc.o ./kernel/arch/$(TARGET_ARCH)/kernel.ld
-	$(TARGET_ARCH)-ld --gc-sections -t -nostdlib -Tdata=0x00310000 -T ./kernel/arch/$(TARGET_ARCH)/kernel.ld -o $(BUILD_DIR)/kernel.bin $(BUILD_DIR)/osfunc.o --library-path=target/$(TARGET_ARCH)-rust/$(BUILD_MODE) -lructiss
+	$(TARGET_ARCH)-ld --gc-sections -t -nostdlib -Tdata=0x00310000 -T ./kernel/arch/$(TARGET_ARCH)/kernel.ld -o $(BUILD_DIR)/kernel.bin $(BUILD_DIR)/osfunc.o --library-path=target/$(TARGET_ARCH)-rust/$(BUILD_MODE) -lructiss -Map $(BUILD_DIR)/kernel.map
 
 # ipl (i386 only)
 $(BUILD_DIR)/ipl.bin: ./kernel/arch/$(TARGET_ARCH)/asm/ipl.asm

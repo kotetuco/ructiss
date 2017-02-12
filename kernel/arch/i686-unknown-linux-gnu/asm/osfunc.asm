@@ -3,7 +3,7 @@
 ;;; For x86 Architecture
 ;;; kotetuco, 2007-2016
 ;;;
-	
+
 bits 32				; 32ビットモードでアセンブル
 
 global	io_hlt
@@ -37,7 +37,7 @@ global	farjmp
 global	farcall
 
 section .text
-	
+
 io_hlt:				; void io_hlt(void)
 	hlt
 	ret
@@ -50,7 +50,7 @@ io_sti:				; void io_sti(void)
 	sti
 	ret
 
-io_stihlt			; void io_stihlt(void)
+io_stihlt:			; void io_stihlt(void)
 	sti
 	hlt
 	ret
@@ -155,7 +155,7 @@ mts_loop:
 	add eax, 0x1000		; アドレスを0x1000(4kバイト分)進める
 	cmp eax, [esp + 12 + 8]	; アドレスが第二引数に達したらループ終了(if(i<=end){})
 	jne mts_loop
-	
+
 	pop ebx			; 値を元に戻す
 	pop esi
 	pop edi
