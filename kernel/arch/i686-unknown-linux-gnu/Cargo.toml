@@ -1,0 +1,6 @@
+[package]
+name = "arch"
+version = "0.0.1"
+
+[dependencies]
+ructiss_core = { path = "../../common/core" }

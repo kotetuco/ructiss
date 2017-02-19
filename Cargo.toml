@@ -1,0 +1,3 @@
+[workspace]
+# Optional key, inferred if not present
+members = ["kernel"]

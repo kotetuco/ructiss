@@ -1,0 +1,30 @@
+[package]
+name = "ructiss"
+version = "0.0.1"
+authors = ["kotetuco"]
+
+[lib]
+path = "src/lib.rs"
+crate-type = ["staticlib"]
+
+[profile.dev]
+panic = "abort"
+opt-level = 0
+debug = true
+lto = true
+
+[profile.release]
+panic = "abort"
+opt-level = 2
+lto = true
+
+[dependencies]
+compiler_builtins = { git = "https://github.com/rust-lang-nursery/compiler-builtins" }
+rlibc = "1.0.0"
+ructiss_core = { path = "common/core/" }
+
+[target.i686-unknown-linux-gnu-rust.dependencies]
+arch = { path = "arch/i686-unknown-linux-gnu" }
+
+[target.arm-none-eabi-rust.dependencies]
+arch-arm-none-eabi = { path = "arch/arm-none-eabi" }

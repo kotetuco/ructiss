@@ -12,6 +12,8 @@ SRC_BOOT=./arch/$(ARCH)/boot
 
 UNAME := $(shell uname)
 
+BUILD_MODE=debug
+
 # default
 default:
 	make image
@@ -24,27 +26,23 @@ $(BUILD_DIR)/$(BUILD_NAME).img: $(BUILD_DIR)/ipl.bin $(BUILD_DIR)/$(BUILD_NAME).
 $(BUILD_DIR)/$(BUILD_NAME).sys: $(BUILD_DIR)/kernel.bin  $(BUILD_DIR)/secondboot.bin
 	cat $(BUILD_DIR)/secondboot.bin $(BUILD_DIR)/kernel.bin > $(BUILD_DIR)/$(BUILD_NAME).sys
 
-$(BUILD_DIR)/kernel.bin:$(BUILD_DIR)/init_os.o $(BUILD_DIR)/osfunc.o
-	$(TARGET_ARCH)-ld -v -nostdlib -Tdata=0x00310000 $(BUILD_DIR)/init_os.o $(BUILD_DIR)/osfunc.o -T kernel.ld -o $(BUILD_DIR)/kernel.bin -Map $(BUILD_DIR)/kernel.map
+$(BUILD_DIR)/kernel.bin:target/$(TARGET_ARCH)-rust/$(BUILD_MODE)/libructiss.a $(BUILD_DIR)/osfunc.o ./kernel/arch/$(TARGET_ARCH)/kernel.ld
+	$(TARGET_ARCH)-ld --gc-sections -t -nostdlib -Tdata=0x00310000 -T ./kernel/arch/$(TARGET_ARCH)/kernel.ld -o $(BUILD_DIR)/kernel.bin $(BUILD_DIR)/osfunc.o --library-path=target/$(TARGET_ARCH)-rust/$(BUILD_MODE) -lructiss -Map $(BUILD_DIR)/kernel.map
 
 # ipl (i386 only)
-$(BUILD_DIR)/ipl.bin: $(SRC_BOOT)/ipl.asm
-	nasm -f bin -o $(BUILD_DIR)/ipl.bin $(SRC_BOOT)/ipl.asm -l $(BUILD_DIR)/ipl.lst
+$(BUILD_DIR)/ipl.bin: ./kernel/arch/$(TARGET_ARCH)/asm/ipl.asm
+	nasm -f bin -o $(BUILD_DIR)/ipl.bin ./kernel/arch/$(TARGET_ARCH)/asm/ipl.asm -l $(BUILD_DIR)/ipl.lst
 
 # secondboot (i386 only)
-$(BUILD_DIR)/secondboot.bin:$(SRC_BOOT)/secondboot.asm
-	nasm -f bin -o $(BUILD_DIR)/secondboot.bin $(SRC_BOOT)/secondboot.asm -l $(BUILD_DIR)/secondboot.lst
-
-# libcore (For Rust code)
-$(BUILD_DIR)/libcore.rlib:$(shell rustc --print sysroot)/lib/rustlib/src/rust/src/libcore/lib.rs
-	rustc --verbose --target=i686-unknown-linux-gnu --crate-type=rlib --emit=link,dep-info -C opt-level=2 -C no-prepopulate-passes -C no-stack-check -Z no-landing-pads -o $(BUILD_DIR)/libcore.rlib $(shell rustc --print sysroot)/lib/rustlib/src/rust/src/libcore/lib.rs
+$(BUILD_DIR)/secondboot.bin:./kernel/arch/$(TARGET_ARCH)/asm/secondboot.asm
+	nasm -f bin -o $(BUILD_DIR)/secondboot.bin ./kernel/arch/$(TARGET_ARCH)/asm/secondboot.asm -l $(BUILD_DIR)/secondboot.lst
 
 # kernel code
-$(BUILD_DIR)/%.o:$(SRC_BOOT)/%.rs $(BUILD_DIR)/libcore.rlib
-	rustc --target=i686-unknown-linux-gnu --crate-type=staticlib --emit=obj -C lto -C opt-level=2 -C no-prepopulate-passes -C no-stack-check -C relocation-model=static -Z verbose -Z no-landing-pads -o $@ $< --extern core=$(BUILD_DIR)/libcore.rlib
+target/$(TARGET_ARCH)-rust/$(BUILD_MODE)/libructiss.a: $(TARGET_ARCH)-rust.json ./kernel/Cargo.toml ./kernel/src/*.rs
+	RUST_TARGET_PATH=$(PWD) rustup run nightly `which xargo` build -v --target=$(TARGET_ARCH)-rust --manifest-path kernel/Cargo.toml
 
-$(BUILD_DIR)/%.o:$(SRC_BOOT)/%.asm
-	nasm -f elf32 $(SRC_BOOT)/$*.asm -o $(BUILD_DIR)/$*.o -l $(BUILD_DIR)/$*.lst
+$(BUILD_DIR)/%.o:./kernel/arch/$(TARGET_ARCH)/asm/%.asm
+	nasm -f elf32 ./kernel/arch/$(TARGET_ARCH)/asm/$*.asm -o $(BUILD_DIR)/$*.o -l $(BUILD_DIR)/$*.lst
 
 # build target
 image:
@@ -76,3 +74,4 @@ clean:
 	rm -f $(BUILD_DIR)/*.lst
 	rm -rf $(BUILD_DIR)
 	rm -rf ./build
+	xargo clean --manifest-path ./kernel/Cargo.toml
