@@ -24,7 +24,7 @@ rlibc = "1.0.0"
 compiler_builtins = { git = "https://github.com/rust-lang-nursery/compiler-builtins" }
 
 [target.i686-unknown-linux-gnu-rust.dependencies]
-arch = { path = "arch/i686-unknown-linux-gnu" }
+arch_i686_unknown_linux_gnu = { path = "arch/i686-unknown-linux-gnu" }
 
 [target.arm-none-eabi-rust.dependencies]
 arch_arm_none_eabi = { path = "arch/arm-none-eabi" }

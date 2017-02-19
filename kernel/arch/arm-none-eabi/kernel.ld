@@ -7,7 +7,7 @@ SECTIONS{
 	/* 0x08000000: using rom (GBA emulator) */
 	.text 0x08000000 : {
 		*(.text)
-		/* *(.text.init_os) */
+		/* *(.text.os_main) */
 		/* *(.text*) */
 	}
 	.data : {

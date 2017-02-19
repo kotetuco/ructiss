@@ -2,8 +2,7 @@
 
 	.global _start
 _start:
-	b init_gba			@ Branch to main()
-;1:      b       1b
+	b os_main			@ Branch to main()
 
 	.global hlt
 hlt:
