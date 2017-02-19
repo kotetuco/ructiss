@@ -6,75 +6,92 @@
 #![no_std]
 
 pub struct RGB {
-    pub r: i32,
-    pub g: i32,
-    pub b: i32,
+    pub r: u8,
+    pub g: u8,
+    pub b: u8,
 }
 
-pub struct RGBDef;
+pub trait RGBDef {
+    fn black() -> Self;
+    fn light_red() -> Self;
+    fn light_green() -> Self;
+    fn light_yellow() -> Self;
+    fn light_blue() -> Self;
+    fn light_purple() -> Self;
+    fn light_pale_blue() -> Self;
+    fn white() -> Self;
+    fn light_gray() -> Self;
+    fn dark_red() -> Self;
+    fn dark_green() -> Self;
+    fn dark_yellow() -> Self;
+    fn dark_blue() -> Self;
+    fn dark_purple() -> Self;
+    fn dark_pale_blue() -> Self;
+    fn dark_gray() -> Self;
+}
 
-impl RGBDef {
-    pub fn black(&self) -> RGB {
+impl RGBDef for RGB {
+    fn black() -> RGB {
         return RGB { r: 0x00, g: 0x00, b: 0x00,};
     }
 
-    pub fn light_red(&self) -> RGB {
+    fn light_red() -> RGB {
         return RGB { r: 0xff, g: 0x00, b: 0x00,};
     }
 
-    pub fn light_green(&self) -> RGB {
+    fn light_green() -> RGB {
         return RGB { r: 0x00, g: 0xff, b: 0x00,};
     }
 
-    pub fn light_yellow(&self) -> RGB {
+    fn light_yellow() -> RGB {
         return RGB { r: 0xff, g: 0xff, b: 0x00,};
     }
 
-    pub fn light_blue(&self) -> RGB {
+    fn light_blue() -> RGB {
         return RGB { r: 0x00, g: 0x00, b: 0xff,};
     }
 
-    pub fn light_purple(&self) -> RGB {
+    fn light_purple() -> RGB {
         return RGB { r: 0xff, g: 0x00, b: 0xff,};
     }
 
-    pub fn light_pale_blue(&self) -> RGB {
+    fn light_pale_blue() -> RGB {
         return RGB { r: 0x00, g: 0xff, b: 0xff,};
     }
 
-    pub fn white(&self) -> RGB {
+    fn white() -> RGB {
         return RGB { r: 0xff, g: 0xff, b: 0xff,};
     }
 
-    pub fn light_gray(&self) -> RGB {
+    fn light_gray() -> RGB {
         return RGB { r: 0xc6, g: 0xc6, b: 0xc6,};
     }
 
-    pub fn dark_red(&self) -> RGB {
+    fn dark_red() -> RGB {
         return RGB { r: 0x84, g: 0x00, b: 0x00,};
     }
 
-    pub fn dark_green(&self) -> RGB {
+    fn dark_green() -> RGB {
         return RGB { r: 0x00, g: 0x84, b: 0x00,};
     }
 
-    pub fn dark_yellow(&self) -> RGB {
+    fn dark_yellow() -> RGB {
         return RGB { r: 0x84, g: 0x84, b: 0x00,};
     }
 
-    pub fn dark_blue(&self) -> RGB {
+    fn dark_blue() -> RGB {
         return RGB { r: 0x00, g: 0x00, b: 0x84,};
     }
 
-    pub fn dark_purple(&self) -> RGB {
+    fn dark_purple() -> RGB {
         return RGB { r: 0x84, g: 0x00, b: 0x84,};
     }
 
-    pub fn dark_pale_blue(&self) -> RGB {
+    fn dark_pale_blue() -> RGB {
         return RGB { r: 0x00, g: 0x84, b: 0x84,};
     }
 
-    pub fn dark_gray(&self) -> RGB {
+    fn dark_gray() -> RGB {
         return RGB { r: 0x84, g: 0x84, b: 0x84,};
     }
 }

@@ -36,27 +36,52 @@ extern "C" {
     pub fn io_out8(port: i32, data: i32);
 }
 
+//
+// public Interface
+//
+
 pub fn init_os() {
-    let vram_address: u32;
-    let screen_x: u16;
-    let screen_y: u16;
-    unsafe {
-        vram_address = *(0x00000ff8 as *mut u32);
-        screen_x = *(0x00000ff4 as *const u16);
-        screen_y = *(0x00000ff6 as *const u16);
+    init_palette();
+}
+
+pub trait ScreenDrawer {
+    fn new() -> Self;
+    fn draw_dot(&self, x:u16, y:u16, color:Palette);
+    fn width(&self) -> u16;
+    fn height(&self) -> u16;
+}
+
+pub struct ArchScreenDrawer {
+    vram_address: u32,
+    screen_x: u16,
+    screen_y: u16,
+}
+
+impl ScreenDrawer for ArchScreenDrawer {
+    fn new() -> Self {
+        ArchScreenDrawer {
+            vram_address: unsafe{ *(0x00000ff8 as *mut u32) },
+            screen_x: unsafe{ *(0x00000ff4 as *const u16) },
+            screen_y: unsafe{ *(0x00000ff6 as *const u16) },
+        }
     }
 
-    init_palette();
+    fn draw_dot(&self, x:u16, y:u16, color:Palette) {
+        let offset: u32 = ((y * self.screen_x) + x) as u32;
+        let vram: *mut u8 = (self.vram_address + offset) as *mut u8;
+        unsafe {
+            // light green
+            *vram = color.palette_no;
+        }
+    }
 
-    let max_offset: u32 = (screen_x * screen_y) as u32;
-     for offset in 0..max_offset {
-//        write_mem8(vram_address + offset, 0x00);
-         let vram: *mut u8 = (vram_address + offset) as *mut u8;
-         unsafe {
-             // light green
-             *vram = 0x02;
-         }
-     }
+    fn width(&self) -> u16 {
+        return self.screen_x;
+    }
+
+    fn height(&self) -> u16 {
+        return self.screen_y;
+    }
 }
 
 pub fn sleep_cpu() {
@@ -67,44 +92,107 @@ pub fn sleep_cpu() {
 // private
 //
 
-trait SetRGBToIO {
-    fn set_rgb_to_io(&self, palette_no:i32);
+pub struct Palette {
+    palette_no: u8,
 }
 
-impl SetRGBToIO for RGB {
-    fn set_rgb_to_io(&self, palette_no:i32) {
+impl Palette {
+    fn set_palette_no_to_io(&self) {
         unsafe {
-            io_out8(0x03c8, palette_no);
-            io_out8(0x03c9, self.r >> 2);
-            io_out8(0x03c9, self.g >> 2);
-            io_out8(0x03c9, self.b >> 2);
+            io_out8(0x03c8, self.palette_no as i32);
         }
-    //    io_out_u8(0x03c8, palette_no);
-    //    io_out_u8(0x03c9, self.r >> 2);
-    //    io_out_u8(0x03c9, self.g >> 2);
-    //    io_out_u8(0x03c9, self.b >> 2);
+        // io_out_u8(0x03c8, palette_no);
+    }
+}
+
+impl RGBDef for Palette {
+    fn black() -> Palette { return Palette{ palette_no: 0 } }
+    fn light_red() -> Palette { return Palette{ palette_no: 1 } }
+    fn light_green() -> Palette { return Palette{ palette_no: 2 } }
+    fn light_yellow() -> Palette { return Palette{ palette_no: 3 } }
+    fn light_blue() -> Palette { return Palette{ palette_no: 4 } }
+    fn light_purple() -> Palette { return Palette{ palette_no: 5 } }
+    fn light_pale_blue() -> Palette { return Palette{ palette_no: 6 } }
+    fn white() -> Palette { return Palette{ palette_no: 7 } }
+    fn light_gray() -> Palette { return Palette{ palette_no: 8 } }
+    fn dark_red() -> Palette { return Palette{ palette_no: 9 } }
+    fn dark_green() -> Palette { return Palette{ palette_no: 10 } }
+    fn dark_yellow() -> Palette { return Palette{ palette_no: 11 } }
+    fn dark_blue() -> Palette { return Palette{ palette_no: 12 } }
+    fn dark_purple() -> Palette { return Palette{ palette_no: 13 } }
+    fn dark_pale_blue() -> Palette { return Palette{ palette_no: 14 } }
+    fn dark_gray() -> Palette { return Palette{ palette_no: 15 } }
+}
+
+trait RGBIO {
+    fn set_rgb_to_io(&self);
+}
+
+impl RGBIO for RGB {
+    fn set_rgb_to_io(&self) {
+        unsafe {
+            io_out8(0x03c9, (self.r as i32) >> 2);
+            io_out8(0x03c9, (self.g as i32) >> 2);
+            io_out8(0x03c9, (self.b as i32) >> 2);
+        }
+        // io_out_u8(0x03c9, self.r >> 2);
+        // io_out_u8(0x03c9, self.g >> 2);
+        // io_out_u8(0x03c9, self.b >> 2);
     }
 }
 
 fn init_palette() {
     let eflags = load_eflags();
     cli();
-    RGBDef.black().set_rgb_to_io(0);
-    RGBDef.light_red().set_rgb_to_io(1);
-    RGBDef.light_green().set_rgb_to_io(2);
-    RGBDef.light_yellow().set_rgb_to_io(3);
-    RGBDef.light_blue().set_rgb_to_io(4);
-    RGBDef.light_purple().set_rgb_to_io(5);
-    RGBDef.light_pale_blue().set_rgb_to_io(6);
-    RGBDef.white().set_rgb_to_io(7);
-    RGBDef.light_gray().set_rgb_to_io(8);
-    RGBDef.dark_red().set_rgb_to_io(9);
-    RGBDef.dark_green().set_rgb_to_io(10);
-    RGBDef.dark_yellow().set_rgb_to_io(11);
-    RGBDef.dark_blue().set_rgb_to_io(12);
-    RGBDef.dark_purple().set_rgb_to_io(13);
-    RGBDef.dark_pale_blue().set_rgb_to_io(14);
-    RGBDef.dark_gray().set_rgb_to_io(15);
+
+    Palette::black().set_palette_no_to_io();
+    RGB::black().set_rgb_to_io();
+
+    Palette::light_red().set_palette_no_to_io();
+    RGB::light_red().set_rgb_to_io();
+
+    Palette::light_green().set_palette_no_to_io();
+    RGB::light_green().set_rgb_to_io();
+
+    Palette::light_yellow().set_palette_no_to_io();
+    RGB::light_yellow().set_rgb_to_io();
+
+    Palette::light_blue().set_palette_no_to_io();
+    RGB::light_blue().set_rgb_to_io();
+
+    Palette::light_purple().set_palette_no_to_io();
+    RGB::light_purple().set_rgb_to_io();
+
+    Palette::light_pale_blue().set_palette_no_to_io();
+    RGB::light_pale_blue().set_rgb_to_io();
+
+    Palette::white().set_palette_no_to_io();
+    RGB::white().set_rgb_to_io();
+
+    Palette::light_gray().set_palette_no_to_io();
+    RGB::light_gray().set_rgb_to_io();
+
+    Palette::dark_red().set_palette_no_to_io();
+    RGB::dark_red().set_rgb_to_io();
+
+    Palette::dark_green().set_palette_no_to_io();
+    RGB::dark_green().set_rgb_to_io();
+
+    Palette::dark_yellow().set_palette_no_to_io();
+    RGB::dark_yellow().set_rgb_to_io();
+
+    Palette::dark_blue().set_palette_no_to_io();
+    RGB::dark_blue().set_rgb_to_io();
+
+    Palette::dark_purple().set_palette_no_to_io();
+    RGB::dark_purple().set_rgb_to_io();
+
+    Palette::dark_pale_blue().set_palette_no_to_io();
+    RGB::dark_pale_blue().set_rgb_to_io();
+
+    Palette::dark_gray().set_palette_no_to_io();
+    RGB::dark_gray().set_rgb_to_io();
+
     store_eflags(eflags);
 }
 

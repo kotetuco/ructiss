@@ -5,6 +5,11 @@
 #![feature(lang_items)]
 #![no_std]
 
+extern crate ructiss_core;
+
+use ructiss_core::RGB;
+use ructiss_core::RGBDef;
+
 //
 // for catching event
 //
@@ -51,6 +56,46 @@ pub fn init_os() {
     init_graphic();
 }
 
+pub trait ScreenDrawer {
+    fn new() -> Self;
+    fn draw_dot(&self, x:u16, y:u16, color:Palette);
+    fn width(&self) -> u16;
+    fn height(&self) -> u16;
+}
+
+pub struct ArchScreenDrawer {
+    vram_address: u32,
+    screen_x: u16,
+    screen_y: u16,
+}
+
+impl ScreenDrawer for ArchScreenDrawer {
+    fn new() -> Self {
+        ArchScreenDrawer {
+            vram_address: 0x06000000,
+            screen_x: 240,
+            screen_y: 160,
+        }
+    }
+
+    fn draw_dot(&self, x:u16, y:u16, color:Palette) {
+        let offset: u32 = ((y * self.screen_x) + x) as u32;
+        let vram: *mut u16 = (self.vram_address + (offset * 2)) as *mut u16;
+        unsafe {
+            // light green
+            *vram = color.convert_16bit_rgb();
+        }
+    }
+
+    fn width(&self) -> u16 {
+        return self.screen_x;
+    }
+
+    fn height(&self) -> u16 {
+        return self.screen_y;
+    }
+}
+
 pub fn sleep_cpu() {
     unsafe {
         // hlt();
@@ -61,26 +106,24 @@ pub fn sleep_cpu() {
 // private
 //
 
+pub type Palette = RGB;
+
+trait GBARGB {
+    fn convert_16bit_rgb(&self) -> u16;
+}
+
+impl GBARGB for RGB {
+    fn convert_16bit_rgb(&self) -> u16{
+        return (((self.b >> 3) as u16) << 10) + (((self.g >> 3) as u16) << 5) + (self.r >> 3) as u16;
+    }
+}
+
 fn init_graphic() {
     let ioram_address: u32 = 0x04000000;
-    let vram_address: u32 = 0x06000000;
-    let screen_x: u16 = 240;
-    let screen_y: u16 = 160;
     unsafe {
         let video_mode: *mut u8 = ioram_address as *mut u8;
         *video_mode = 0x03; // mode 3
         let bg: *mut u8 = (ioram_address + 1) as *mut u8;
         *bg = 0x04; // BG2
-    }
-
-    // draw vram
-    let max_offset: u32 = (screen_x * screen_y) as u32;
-    for offset in 0..max_offset {
-        // 1dot is 2byte.
-        let vram: *mut u16 = (vram_address + (offset * 2)) as *mut u16;
-        unsafe {
-            // green
-            *vram = 0x03e0;
-        }
     }
 }
