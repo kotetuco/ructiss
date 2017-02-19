@@ -14,8 +14,6 @@ use ructiss_core::RGBDef;
 extern "C" {
     #[cfg(any(target_arch = "x86"))]
     pub fn io_out8(port: i32, data: i32);
-    #[cfg(any(target_arch = "x86"))]
-    pub fn dbg_set_eax(eax: u32);
 }
 
 #[cfg(any(target_arch = "x86"))]
