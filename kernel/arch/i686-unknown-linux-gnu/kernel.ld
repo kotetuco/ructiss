@@ -7,7 +7,7 @@ kotetuco 2008 - 2016
 
 /*出力オブジェクトファイル(Makefileで定義)*/
 
-ENTRY(init_os)
+ENTRY(os_main)
 
 /*出力フォーマット*/
 OUTPUT_FORMAT("binary")
@@ -24,7 +24,7 @@ SECTIONS{
 		LONG(SIZEOF(.data))
 		LONG(LOADADDR(.data))
 		LONG(0xe9000000)
-		LONG(init_os - 0x20)
+		LONG(os_main - 0x20)
 		LONG((ADDR(.bss) + SIZEOF(.bss) + 0xf) & ~ 0xf)
 	}
 
@@ -32,7 +32,7 @@ SECTIONS{
 	.text ADDR(.head) + SIZEOF(.head) : SUBALIGN(1)
 	{
 		/*.textセクション全部を含む*/
-		*(.text.init_os)
+		*(.text.os_main)
 		*(.text*)
 	}
 
