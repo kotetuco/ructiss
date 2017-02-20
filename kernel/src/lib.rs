@@ -31,13 +31,9 @@ use arch::Palette;
 pub extern "C" fn os_main() {
     init_os();
     let drawer: ArchScreenDrawer = ArchScreenDrawer::new();
-    let width: u16 = drawer.width();
-    let height: u16 = drawer.height();
-    for y in 0..height {
-        for x in 0..width {
-            drawer.draw_dot(x, y, Palette::white());
-        }
-    }
+    drawer.draw_box(20, 20, 100, 100, &Palette::light_red());
+    drawer.draw_box(70, 50, 100, 100, &Palette::light_green());
+    drawer.draw_box(120, 80, 100, 100, &Palette::light_blue());
     loop {
         sleep_cpu();
     }

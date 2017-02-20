@@ -44,7 +44,7 @@ $(BUILD_DIR_i686)/secondboot.bin:./kernel/arch/$(TARGET_ARCH_i686)/asm/secondboo
 	nasm -f bin -o $(BUILD_DIR_i686)/secondboot.bin ./kernel/arch/$(TARGET_ARCH_i686)/asm/secondboot.asm -l $(BUILD_DIR_i686)/secondboot.lst
 
 # kernel code
-target/$(TARGET_ARCH_i686)-rust/$(BUILD_MODE)/libructiss.a: $(TARGET_ARCH_i686)-rust.json ./kernel/Cargo.toml ./kernel/src/*.rs ./kernel/arch/i686-unknown-linux-gnu/src/*.rs
+target/$(TARGET_ARCH_i686)-rust/$(BUILD_MODE)/libructiss.a: $(TARGET_ARCH_i686)-rust.json ./kernel/Cargo.toml ./kernel/src/*.rs ./kernel/common/core/src/*.rs ./kernel/arch/i686-unknown-linux-gnu/src/*.rs
 	RUST_TARGET_PATH=$(PWD) rustup run nightly `which xargo` build -v --target=$(TARGET_ARCH_i686)-rust --manifest-path kernel/Cargo.toml
 
 $(BUILD_DIR_i686)/%.o:./kernel/arch/$(TARGET_ARCH_i686)/asm/%.asm
@@ -60,7 +60,7 @@ $(BUILD_DIR_GBA)/$(BUILD_NAME_GBA).gba: $(BUILD_DIR_GBA)/$(BUILD_NAME_GBA).elf
 $(BUILD_DIR_GBA)/$(BUILD_NAME_GBA).elf: $(BUILD_DIR_GBA)/crt.o ./kernel/arch/$(TARGET_ARCH_GBA)/kernel.ld target/$(TARGET_ARCH_GBA)-rust/$(BUILD_MODE)/libructiss.a
 	$(TARGET_ARCH_GBA)-ld -t -T ./kernel/arch/$(TARGET_ARCH_GBA)/kernel.ld -o $(BUILD_DIR_GBA)/$(BUILD_NAME_GBA).elf  $(BUILD_DIR_GBA)/crt.o --library-path=target/$(TARGET_ARCH_GBA)-rust/$(BUILD_MODE) -lructiss -Map $(BUILD_DIR_GBA)/kernel.map
 
-target/$(TARGET_ARCH_GBA)-rust/$(BUILD_MODE)/libructiss.a: $(TARGET_ARCH_GBA)-rust.json ./kernel/Cargo.toml ./kernel/src/*.rs  ./kernel/arch/arm-none-eabi/src/*.rs
+target/$(TARGET_ARCH_GBA)-rust/$(BUILD_MODE)/libructiss.a: $(TARGET_ARCH_GBA)-rust.json ./kernel/Cargo.toml ./kernel/src/*.rs ./kernel/common/core/src/*.rs ./kernel/arch/arm-none-eabi/src/*.rs
 	RUST_TARGET_PATH=$(PWD) rustup run nightly `which xargo` build -v --target=$(TARGET_ARCH_GBA)-rust --manifest-path kernel/Cargo.toml
 
 $(BUILD_DIR_GBA)/crt.o:./kernel/arch/$(TARGET_ARCH_GBA)/asm/crt.S

@@ -8,7 +8,6 @@
 extern crate ructiss_core;
 
 use ructiss_core::RGB;
-use ructiss_core::RGBDef;
 
 //
 // for catching event
@@ -58,7 +57,8 @@ pub fn init_os() {
 
 pub trait ScreenDrawer {
     fn new() -> Self;
-    fn draw_dot(&self, x:u16, y:u16, color:Palette);
+    fn draw_dot(&self, x:u16, y:u16, color:&Palette);
+    fn draw_box(&self, x:u16, y:u16, width:u16, height:u16, color:&Palette);
     fn width(&self) -> u16;
     fn height(&self) -> u16;
 }
@@ -78,12 +78,22 @@ impl ScreenDrawer for ArchScreenDrawer {
         }
     }
 
-    fn draw_dot(&self, x:u16, y:u16, color:Palette) {
+    fn draw_dot(&self, x:u16, y:u16, color:&Palette) {
         let offset: u32 = ((y * self.screen_x) + x) as u32;
         let vram: *mut u16 = (self.vram_address + (offset * 2)) as *mut u16;
         unsafe {
             // light green
             *vram = color.convert_16bit_rgb();
+        }
+    }
+
+    fn draw_box(&self, x:u16, y:u16, width:u16, height:u16, color:&Palette) {
+        for offset_y in 0..height {
+            for offset_x in 0..width {
+                let valid_x = if x + offset_x > self.screen_x { self.screen_x } else { x + offset_x };
+                let valid_y = if y + offset_y > self.screen_y { self.screen_y } else { y + offset_y };
+                self.draw_dot(valid_x, valid_y, color);
+            }
         }
     }
 
